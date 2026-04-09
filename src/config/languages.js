@@ -1,4 +1,4 @@
-import Clogo from '../assets/Clogo.png';
+import Clogo from '../assets/clogo.png';
 import CppLogo from '../assets/cpplogo.png';
 import PythonLogo from '../assets/pythonlogo.png';
 import JavaLogo from '../assets/javalogo.png';
