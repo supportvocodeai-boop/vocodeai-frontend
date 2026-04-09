@@ -1,10 +1,10 @@
-import Clogo from '../assets/clogo.png';
+import Clogo from '../assets/Clogo.png';
 import CppLogo from '../assets/cpplogo.png';
 import PythonLogo from '../assets/pythonlogo.png';
 import JavaLogo from '../assets/javalogo.png';
 import JsLogo from '../assets/jslogo.png';
-import HTMLlogo from '../assets/htmllogo.png';
-import CSSlogo from '../assets/csslogo.png';
+import HTMLlogo from '../assets/HTMLlogo.png';
+import CSSlogo from '../assets/CSSlogo.png';
 
 
 export const LANGUAGE_META = {
