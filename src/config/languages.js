@@ -5,8 +5,7 @@ import JavaLogo from '../assets/javalogo.png';
 import JsLogo from '../assets/jslogo.png';
 import HTMLlogo from '../assets/htmllogo.png';
 import CSSlogo from '../assets/csslogo.png';
-
-
+/*Hee;;llo*/
 export const LANGUAGE_META = {
   cpp: {
     label: "C++",
