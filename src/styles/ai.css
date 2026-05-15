@@ -30,6 +30,8 @@
 
   min-height: 0;
 
+  height: 100%;
+
   background: linear-gradient(
     to bottom,
     #0b1118,
@@ -39,6 +41,33 @@
   font-family: "Inter", sans-serif;
 
   overflow: hidden;
+}
+
+/* ===================================================== */
+/* SCROLL AREA */
+/* ===================================================== */
+
+.ai-scroll-area {
+  flex: 1;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+
+  scroll-behavior: smooth;
+}
+
+.ai-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-scroll-area::-webkit-scrollbar-thumb {
+  background: #2a3a4a;
+  border-radius: 10px;
 }
 
 /* ===================================================== */
@@ -125,7 +154,6 @@
 
 .guide-item {
   display: flex;
-
   gap: 12px;
 }
 
@@ -184,6 +212,8 @@
   color: #00ff9c;
 
   font-size: 11px;
+
+  overflow-x: auto;
 }
 
 .upcoming-features {
@@ -226,16 +256,6 @@
   gap: 12px;
 
   padding: 14px;
-}
-
-.ai-messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.ai-messages::-webkit-scrollbar-thumb {
-  background: #2a3a4a;
-
-  border-radius: 4px;
 }
 
 /* ===================================================== */
@@ -296,8 +316,6 @@
   animation: fadeIn 0.2s ease;
 }
 
-/* USER */
-
 .msg.user {
   align-self: flex-end;
 
@@ -311,8 +329,6 @@
 
   font-weight: 600;
 }
-
-/* ASSISTANT */
 
 .msg.assistant {
   align-self: flex-start;
@@ -340,15 +356,24 @@
 
   padding: 10px;
 
+  padding-bottom: max(
+    10px,
+    env(safe-area-inset-bottom)
+  );
+
   background: #0c141b;
 
   border-top: 1px solid #1f2a36;
 
   flex-shrink: 0;
+
+  z-index: 20;
 }
 
 .ai-input input {
   flex: 1;
+
+  min-width: 0;
 
   height: 42px;
 
@@ -375,8 +400,6 @@
   border-color: #00ff9c;
 }
 
-/* BUTTON */
-
 .ai-input button {
   height: 42px;
 
@@ -396,6 +419,8 @@
   cursor: pointer;
 
   transition: 0.2s;
+
+  flex-shrink: 0;
 }
 
 .ai-input button:hover {
@@ -427,6 +452,8 @@
   font-size: 15px;
 
   transition: 0.2s;
+
+  flex-shrink: 0;
 }
 
 .voice-btn:hover {
@@ -518,11 +545,12 @@
 
     top: 64px;
     right: 0;
+    bottom: 0;
 
     width: 100%;
     min-width: 100%;
 
-    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
 
     z-index: 1000;
 
@@ -539,17 +567,20 @@
 
   .msg {
     max-width: 94%;
-
     font-size: 12px;
   }
 
   .ai-input {
     padding: 8px;
+
+    padding-bottom: max(
+      8px,
+      env(safe-area-inset-bottom)
+    );
   }
 
   .ai-input input {
     height: 40px;
-
     font-size: 12px;
   }
 
@@ -599,15 +630,4 @@
   .ai-empty p {
     font-size: 12px;
   }
-}
-
-.ai-scroll-area {
-  flex: 1;
-
-  overflow-y: auto;
-
-  display: flex;
-  flex-direction: column;
-
-  min-height: 0;
 }
