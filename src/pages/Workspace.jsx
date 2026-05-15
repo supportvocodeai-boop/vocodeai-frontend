@@ -80,7 +80,7 @@ function WorkspaceLayout() {
   const showTerminal = terminals.length > 0;
 
   return (
-    <>
+    <div className="workspace-page">
       <Navbar setMobileSidebarOpen={setMobileSidebarOpen} />
 
       <div
@@ -167,7 +167,8 @@ function WorkspaceLayout() {
           )}
         </div>
       </div>
-    </>
+    </div>
+
   );
 }
 

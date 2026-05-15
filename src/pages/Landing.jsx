@@ -147,7 +147,7 @@ const Landing = () => {
   };
 
   return (
-    <div>
+    <div className="landing-page">
       <nav className="navbar">
         <div className="navbar-inner">
           {/* LEFT: Logo */}

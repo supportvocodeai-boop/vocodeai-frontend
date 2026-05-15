@@ -8,6 +8,20 @@
 html {
   scroll-behavior: smooth;
 }
+
+.landing-page {
+  width: 100%;
+  min-height: 100vh;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  background: radial-gradient(
+    circle at center,
+    #041f19,
+    #010d0a
+  );
+}
 /* Navbar */
 .navbar {
   width: 100%;
