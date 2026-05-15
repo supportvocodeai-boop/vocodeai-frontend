@@ -1,318 +1,231 @@
 /* ===================================================== */
-/* WRAPPER */
+/* GLOBAL */
 /* ===================================================== */
 
-.terminal-wrapper {
-  display: flex;
-  flex-direction: column;
-
+html,
+body,
+#root {
   height: 100%;
+  margin: 0;
+  padding: 0;
 
   overflow: hidden;
-
-  background: #000;
 }
 
 /* ===================================================== */
-/* HEADER */
+/* WORKSPACE */
 /* ===================================================== */
 
-.terminal-header {
-  height: 48px;
+.workspace {
+  display: flex;
+
+  height: calc(100vh - 70px);
+
+  background: #0b0f0f;
+
+  overflow: hidden;
+}
+
+/* ===================================================== */
+/* SIDEBAR WRAPPER */
+/* ===================================================== */
+
+.sidebar-wrapper {
+  display: flex;
+
+  height: 100%;
+
+  position: relative;
+
+  flex-shrink: 0;
+}
+
+/* ===================================================== */
+/* SIDEBAR RESIZER */
+/* ===================================================== */
+
+.sidebar-resizer {
+  width: 5px;
+
+  cursor: col-resize;
+
+  background: transparent;
+
+  transition: 0.2s;
+}
+
+.sidebar-resizer:hover {
+  background: rgba(0, 255, 170, 0.2);
+}
+
+/* ===================================================== */
+/* MAIN */
+/* ===================================================== */
+
+.workspace-main {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* ===================================================== */
+/* CONTENT */
+/* ===================================================== */
+
+.workspace-content {
+  flex: 1;
+
+  display: flex;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  position: relative;
+}
+
+/* ===================================================== */
+/* EDITOR SECTION */
+/* ===================================================== */
+
+.editor-section {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* ===================================================== */
+/* EDITOR AREA */
+/* ===================================================== */
+
+.editor-area {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+/* ===================================================== */
+/* MONACO */
+/* ===================================================== */
+
+.editor-area > div {
+  height: 100%;
+}
+
+/* ===================================================== */
+/* TERMINAL SECTION */
+/* ===================================================== */
+
+.terminal-section {
+  display: flex;
+  flex-direction: column;
+
+  background: #000;
+
+  border-top: 1px solid
+    rgba(0,255,170,0.08);
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+}
+
+/* ===================================================== */
+/* TERMINAL RESIZER */
+/* ===================================================== */
+
+.terminal-resizer {
+  height: 5px;
+
+  cursor: row-resize;
+
+  background: transparent;
+
+  transition: 0.2s;
+}
+
+.terminal-resizer:hover {
+  background: rgba(0, 255, 170, 0.2);
+}
+
+/* ===================================================== */
+/* AI HEADER */
+/* ===================================================== */
+
+.ai-header {
+  height: 50px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 10px;
-
-  padding: 0 12px;
-
-  background: linear-gradient(
-    180deg,
-    #00241d,
-    #001510
-  );
-
-  border-top: 1px solid
-    rgba(0, 255, 170, 0.08);
-
-  flex-shrink: 0;
-
-  overflow: hidden;
-}
-
-/* ===================================================== */
-/* TABS AREA */
-/* ===================================================== */
-
-.terminal-tabs {
-  flex: 1;
-
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-
-  overflow-x: auto;
-  overflow-y: hidden;
-
-  scrollbar-width: none;
-}
-
-.terminal-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-/* ===================================================== */
-/* TAB */
-/* ===================================================== */
-
-.terminal-tab {
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 0 12px;
-
-  background: #151515;
-
-  border-radius: 8px 8px 0 0;
-
-  color: #9ca3af;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-
-  flex-shrink: 0;
-
-  width: fit-content;
-
-  overflow: hidden;
-}
-
-.terminal-tab:hover {
-  background: #1d1d1d;
-  color: white;
-}
-
-.terminal-tab.active {
-  background: #181818;
-
-  color: #00ffa6;
-
-  border-bottom: 2px solid #00ffa6;
-}
-
-/* ===================================================== */
-/* DOT */
-/* ===================================================== */
-
-.dot {
-  width: 8px;
-  height: 8px;
-
-  border-radius: 50%;
-
-  background: #ff4d4f;
-
-  flex-shrink: 0;
-}
-
-/* ===================================================== */
-/* TITLE */
-/* ===================================================== */
-
-.terminal-tab .title {
-  flex: 1;
-
-  font-family: "Inter", sans-serif !important;
-
-  font-size: 14px !important;
-
-  line-height: 1 !important;
-
-  font-weight: 600 !important;
-
-  transform: none !important;
-
-  letter-spacing: 0 !important;
-
-  text-transform: none !important;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  max-width: 90px;
-
-  display: block;
-}
-
-.terminal-tab * {
-  transform: none !important;
-}
-/* ===================================================== */
-/* ACTIONS */
-/* ===================================================== */
-
-.actions {
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-
-  flex-shrink: 0;
-}
-
-.actions svg {
-  width: 13px;
-  height: 13px;
-
-  opacity: 0.7;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.actions svg:hover {
-  opacity: 1;
-  color: #00ffa6;
-}
-
-.actions .close:hover {
-  color: #ff4d4f;
-}
-
-/* ===================================================== */
-/* RIGHT SIDE */
-/* ===================================================== */
-
-.terminal-right {
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  flex-shrink: 0;
-}
-
-/* ===================================================== */
-/* NEW BUTTON */
-/* ===================================================== */
-
-.new-btn {
-  height: 36px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 6px;
-
   padding: 0 14px;
 
+  background: #0d141c;
+
+  border-bottom: 1px solid #1f2a36;
+
+  flex-shrink: 0;
+}
+
+.ai-header span {
+  color: #00ff9c;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ai-header button {
+  width: 34px;
+  height: 34px;
+
   border: none;
 
   border-radius: 10px;
 
-  background: linear-gradient(
-    90deg,
-    #00ffa6,
-    #00cc88
-  );
+  background: #1c2732;
 
-  color: #001a14;
-
-  font-size: 14px;
-  font-weight: 600;
+  color: white;
 
   cursor: pointer;
 
-  transition: 0.2s ease;
-}
-
-.new-btn:hover {
-  box-shadow: 0 0 10px
-    rgba(0, 255, 170, 0.35);
-}
-
-/* ===================================================== */
-/* ICON BUTTON */
-/* ===================================================== */
-
-.icon-btn {
-  width: 36px;
-  height: 36px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  background: #1a1a1a;
-
-  color: white;
+  transition: 0.2s;
 
   display: flex;
   align-items: center;
   justify-content: center;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
 }
 
-.icon-btn:hover {
-  background: #252525;
-}
-
-.icon-btn.danger:hover {
-  color: #ff4d4f;
+.ai-header button:hover {
+  background: #ff3b3b;
 }
 
 /* ===================================================== */
-/* PANEL */
+/* TABLET */
 /* ===================================================== */
 
-.terminal-panel {
-  flex: 1;
-
-  position: relative;
-
-  overflow: hidden;
-
-  background: #000;
-}
-
-/* ===================================================== */
-/* XTERM */
-/* ===================================================== */
-
-.xterm-container {
-  width: 100%;
-  height: 100%;
-}
-
-/* ===================================================== */
-/* XTERM FIX */
-/* ===================================================== */
-
-.xterm,
-.xterm-viewport,
-.xterm-screen,
-.xterm-scroll-area {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.xterm {
-  padding: 8px;
+@media (max-width: 1024px) {
+  .workspace {
+    height: calc(100vh - 64px);
+  }
 }
 
 /* ===================================================== */
@@ -320,50 +233,127 @@
 /* ===================================================== */
 
 @media (max-width: 768px) {
-  .terminal-header {
-    height: 44px;
 
-    padding: 0 8px;
+  html,
+  body,
+  #root {
+    height: 100dvh;
+    overflow: hidden;
   }
 
-  .terminal-tab {
-    min-width: 120px;
-    max-width: 170px;
+  .workspace {
+    height: 100dvh;
 
-    padding: 0 10px;
+    overflow: hidden;
 
-    gap: 6px;
+    position: relative;
   }
 
-  .title {
-    font-size: 12px;
+  .workspace-main {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: hidden;
   }
 
-  .actions {
-    gap: 5px;
+  .workspace-content {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: hidden;
   }
 
-  .actions svg {
-    width: 12px;
-    height: 12px;
+  .editor-section {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: hidden;
   }
 
-  .new-btn {
-    width: 34px;
-    padding: 0;
+  .editor-area {
+    min-height: 0;
+
+    overflow: hidden;
   }
 
-  .new-btn span {
+  /* ====================================== */
+  /* AI MOBILE OVERLAY */
+  /* ====================================== */
+
+  .ai-sidebar {
+    position: fixed;
+
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100% !important;
+    min-width: 100% !important;
+
+    height: auto !important;
+
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #0b1118;
+  }
+
+  .ai-panel {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+
+    overflow: hidden;
+  }
+
+  .ai-scroll-area {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
+
+    overflow-x: hidden;
+  }
+
+  .ai-input {
+    position: relative !important;
+
+    bottom: unset !important;
+
+    flex-shrink: 0;
+
+    width: 100%;
+
+    z-index: 20;
+  }
+
+  /* ====================================== */
+  /* MOBILE TERMINAL */
+  /* ====================================== */
+
+  .terminal-section {
+    min-height: 180px;
+  }
+
+  /* ====================================== */
+  /* MOBILE RESIZERS */
+  /* ====================================== */
+
+  .sidebar-resizer,
+  .terminal-resizer {
     display: none;
-  }
-
-  .icon-btn {
-    width: 32px;
-    height: 32px;
-  }
-
-  .xterm {
-    padding: 4px;
   }
 }
 
@@ -372,16 +362,22 @@
 /* ===================================================== */
 
 @media (max-width: 480px) {
-  .terminal-tab {
-    min-width: 100px;
-    max-width: 140px;
+  .workspace {
+    height: 100dvh;
   }
 
-  .title {
-    font-size: 11px;
+  .ai-header {
+    height: 46px;
+
+    padding: 0 12px;
   }
 
-  .terminal-right {
-    gap: 5px;
+  .ai-header span {
+    font-size: 13px;
+  }
+
+  .ai-header button {
+    width: 32px;
+    height: 32px;
   }
 }
