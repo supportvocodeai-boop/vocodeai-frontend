@@ -2,19 +2,27 @@
 
 .navbar {
   height: 70px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   padding: 0 24px;
 
-  background: linear-gradient(180deg, #001f1a, #001510);
-  border-bottom: 1px solid rgba(0, 255, 170, 0.08);
+  background: linear-gradient(
+    180deg,
+    #001f1a,
+    #001510
+  );
+
+  border-bottom: 1px solid
+    rgba(0, 255, 170, 0.08);
 
   position: relative;
-  z-index: 100;
 
-  overflow: hidden;
+  z-index: 1000;
+
+  overflow: visible;
 }
 
 /* ================= LEFT ================= */
@@ -117,7 +125,10 @@
 
 .navbar-right {
   position: relative;
+
   flex-shrink: 0;
+
+  overflow: visible;
 }
 
 /* BUTTON */
@@ -150,25 +161,33 @@
 
 .dropdown {
   position: absolute;
-  top: 55px;
+
+  top: calc(100% + 10px);
+
   right: 0;
 
   width: 260px;
+
   max-width: calc(100vw - 24px);
 
   padding: 12px;
 
   border-radius: 16px;
 
-  background: rgba(0, 30, 24, 0.96);
+  background: rgba(0, 30, 24, 0.98);
 
   backdrop-filter: blur(16px);
 
-  border: 1px solid rgba(0, 255, 170, 0.15);
+  border: 1px solid
+    rgba(0, 255, 170, 0.15);
 
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0,255,170,0.04);
 
   animation: dropdownFade 0.25s ease;
+
+  z-index: 99999;
 }
 
 /* ITEM */
