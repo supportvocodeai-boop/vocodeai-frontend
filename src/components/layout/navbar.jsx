@@ -14,7 +14,7 @@ import { useWorkspace } from "../../context/WorkspaceContext";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/navbar.css";
 
-export default function Navbar() {
+export default function Navbar({ setMobileSidebarOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { openNewTerminal, terminals, killTerminal } = useWorkspace();
@@ -40,11 +40,14 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      {/* LEFT */}
-      <div
-        className="navbar-left"
-        onClick={() => navigate("/dashboard")}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileSidebarOpen(true)}
       >
+        ☰
+      </button>
+      {/* LEFT */}
+      <div className="navbar-left" onClick={() => navigate("/dashboard")}>
         <img src="/vcode.png" alt="Vocodeai" className="logo-img" />
       </div>
 
@@ -65,16 +68,17 @@ export default function Navbar() {
           <span>Terminal</span>
         </div>
 
-        <div className="nav-tab ai-tab" onClick={() => {
-          const params = new URLSearchParams(location.search);
-          const isOpen = params.get("ai") === "true";
+        <div
+          className="nav-tab ai-tab"
+          onClick={() => {
+            const params = new URLSearchParams(location.search);
+            const isOpen = params.get("ai") === "true";
 
-          navigate(
-            isOpen
-              ? location.pathname
-              : `${location.pathname}?ai=true`
-          );
-        }}>
+            navigate(
+              isOpen ? location.pathname : `${location.pathname}?ai=true`,
+            );
+          }}
+        >
           <FaRobot />
           <span>AI</span>
         </div>

@@ -12,8 +12,7 @@ import { useAuth } from "../context/AuthContext";
 
 const WorkspaceContext = createContext();
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-const safeTerminalId = (id) =>
-  "term_" + id.replace(/[^a-zA-Z0-9_-]/g, "_");
+const safeTerminalId = (id) => "term_" + id.replace(/[^a-zA-Z0-9_-]/g, "_");
 
 export function WorkspaceProvider({ userId, workspaceId, children }) {
   const { accessToken } = useAuth();
@@ -25,6 +24,9 @@ export function WorkspaceProvider({ userId, workspaceId, children }) {
   const [fileContents, setFileContents] = useState({});
   const [dirtyFiles, setDirtyFiles] = useState(new Set());
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [isRunningProject, setIsRunningProject] = useState(false);
+
+  const runningTerminalRef = useRef(new Set());
 
   const [createRequest, setCreateRequest] = useState(null);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
@@ -47,76 +49,72 @@ export function WorkspaceProvider({ userId, workspaceId, children }) {
   const SAVE_DELAY = 800;
   const saveTimersRef = useRef({});
   const fileContentsRef = useRef({});
-  
+
   useEffect(() => {
     fileContentsRef.current = fileContents;
   }, [fileContents]);
 
   /* ================= WEBSOCKET ================= */
 
-useEffect(() => {
-  if (!userId || !workspaceId || !accessToken) return;
+  useEffect(() => {
+    if (!userId || !workspaceId || !accessToken) return;
 
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  const host = backendUrl.replace(/^https?:\/\//, "");
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const host = backendUrl.replace(/^https?:\/\//, "");
 
-  const ws = new WebSocket(
-    `${protocol}://${host}?token=${accessToken}`
-  );
+    const ws = new WebSocket(`${protocol}://${host}?token=${accessToken}`);
 
-  socketRef.current = ws;
+    socketRef.current = ws;
 
-  ws.onopen = () => {
-    wsReadyRef.current = true;
-  };
+    ws.onopen = () => {
+      wsReadyRef.current = true;
+    };
 
-  ws.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
 
-    if (msg.type === "output") {
-      window.dispatchEvent(
-        new CustomEvent("terminal-output", { detail: msg })
-      );
-    }
+      if (msg.type === "output") {
+        window.dispatchEvent(
+          new CustomEvent("terminal-output", { detail: msg }),
+        );
+      }
 
-   if (msg.type === "created") {
-  setTerminals((prev) =>
-    prev.some((t) => t.id === msg.terminalId)
-      ? prev
-      : [...prev, { id: msg.terminalId }]
-  );
+      if (msg.type === "created") {
+        setTerminals((prev) =>
+          prev.some((t) => t.id === msg.terminalId)
+            ? prev
+            : [...prev, { id: msg.terminalId }],
+        );
 
-  setActiveTerminal(msg.terminalId);
+        setActiveTerminal(msg.terminalId);
 
-  // 🔥 RUN PENDING COMMAND
-  if (pendingRunRef.current) {
-    socketRef.current.send(
-      JSON.stringify({
-        type: "input",
-        terminalId: msg.terminalId,
-        data: pendingRunRef.current,
-      })
-    );
+        // 🔥 RUN PENDING COMMAND
+        if (pendingRunRef.current) {
+          socketRef.current.send(
+            JSON.stringify({
+              type: "input",
+              terminalId: msg.terminalId,
+              data: pendingRunRef.current,
+            }),
+          );
 
-    pendingRunRef.current = null;
-  }
-}
+          pendingRunRef.current = null;
+        }
+      }
 
-    if (msg.type === "closed") {
-      setTerminals((prev) =>
-        prev.filter((t) => t.id !== msg.terminalId)
-      );
-    }
-  };
+      if (msg.type === "closed") {
+        setTerminals((prev) => prev.filter((t) => t.id !== msg.terminalId));
+      }
+    };
 
-  ws.onclose = () => {
-    wsReadyRef.current = false;
-  };
+    ws.onclose = () => {
+      wsReadyRef.current = false;
+    };
 
-  return () => {
-    ws.close();
-  };
-}, [userId, workspaceId, accessToken]);
+    return () => {
+      ws.close();
+    };
+  }, [userId, workspaceId, accessToken]);
 
   const sendWS = (payload) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
@@ -155,16 +153,16 @@ useEffect(() => {
   /* ================= LOAD WORKSPACE ================= */
 
   const loadWorkspace = useCallback(async () => {
-      if (!workspaceId || !accessToken) return;
-  
-      try {
-        const nodes = await fileApi.loadTree(accessToken, workspaceId);
-        setTree(buildTree(nodes));
-      } catch (err) {
-        console.error("Failed to load workspace", err);
-        setTree({ name: workspaceId, type: "folder", children: [] });
-      }
-    }, [workspaceId, accessToken]);
+    if (!workspaceId || !accessToken) return;
+
+    try {
+      const nodes = await fileApi.loadTree(accessToken, workspaceId);
+      setTree(buildTree(nodes));
+    } catch (err) {
+      console.error("Failed to load workspace", err);
+      setTree({ name: workspaceId, type: "folder", children: [] });
+    }
+  }, [workspaceId, accessToken]);
 
   useEffect(() => {
     loadWorkspace();
@@ -187,238 +185,281 @@ useEffect(() => {
 
   /* ================= FILE SYSTEM ================= */
 
-   const addFile = async (parentPath, name) => {
-     const path = parentPath ? `${parentPath}/${name}` : name;
-     await fileApi.createFile(accessToken, workspaceId, path);
-     await loadWorkspace();
-     await openFile(path);
-   };
+  const addFile = async (parentPath, name) => {
+    const path = parentPath ? `${parentPath}/${name}` : name;
+    await fileApi.createFile(accessToken, workspaceId, path);
+    await loadWorkspace();
+    await openFile(path);
+  };
 
- const addFolder = async (parentPath, name) => {
-     const path = parentPath ? `${parentPath}/${name}` : name;
-     await fileApi.createFolder(accessToken, workspaceId, path);
-     await loadWorkspace();
-   };
+  const addFolder = async (parentPath, name) => {
+    const path = parentPath ? `${parentPath}/${name}` : name;
+    await fileApi.createFolder(accessToken, workspaceId, path);
+    await loadWorkspace();
+  };
 
- const openFile = async (path) => {
-     setOpenTabs((prev) =>
-       prev.includes(path) ? prev : [...prev, path]
-     );
- 
-     setActiveFile(path);
- 
-     if (fileContentsRef.current[path] !== undefined) return;
- 
-     const content = await fileApi.readFile(
-       accessToken,
-       workspaceId,
-       path
-     );
- 
-     setFileContents((prev) => ({
-       ...prev,
-       [path]: content || "",
-     }));
-   };
+  const openFile = async (path) => {
+    setOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
+
+    setActiveFile(path);
+
+    if (fileContentsRef.current[path] !== undefined) return;
+
+    const content = await fileApi.readFile(accessToken, workspaceId, path);
+
+    setFileContents((prev) => ({
+      ...prev,
+      [path]: content || "",
+    }));
+  };
 
   const updateContent = (path, content) => {
-      setFileContents((prev) => ({
-        ...prev,
-        [path]: content,
-      }));
-  
-      setDirtyFiles((prev) => {
-        const s = new Set(prev);
-        s.add(path);
-        return s;
-      });
-  
-      clearTimeout(saveTimersRef.current[path]);
-  
-      saveTimersRef.current[path] = setTimeout(async () => {
-        try {
-          await fileApi.saveFile(
-            accessToken,
-            workspaceId,
-            path,
-            content
-          );
-  
-          setDirtyFiles((prev) => {
-            const s = new Set(prev);
-            s.delete(path);
-            return s;
-          });
-        } catch (e) {
-          console.error("Save failed", e);
-        }
-      }, SAVE_DELAY);
-    };
+    setFileContents((prev) => ({
+      ...prev,
+      [path]: content,
+    }));
 
-const closeTab = (path) => {
-  setOpenTabs((prev) => prev.filter((t) => t !== path));
+    setDirtyFiles((prev) => {
+      const s = new Set(prev);
+      s.add(path);
+      return s;
+    });
 
-  setFileContents((prev) => {
-    const copy = { ...prev };
-    delete copy[path];
-    return copy;
-  });
+    clearTimeout(saveTimersRef.current[path]);
 
-  if (activeFile === path) setActiveFile(null);
-};
+    saveTimersRef.current[path] = setTimeout(async () => {
+      try {
+        await fileApi.saveFile(accessToken, workspaceId, path, content);
 
+        setDirtyFiles((prev) => {
+          const s = new Set(prev);
+          s.delete(path);
+          return s;
+        });
+      } catch (e) {
+        console.error("Save failed", e);
+      }
+    }, SAVE_DELAY);
+  };
 
-const renameNode = async (oldPath, newName) => {
-  const newPath = oldPath
-    .split("/")
-    .slice(0, -1)
-    .concat(newName)
-    .join("/");
+  const closeTab = (path) => {
+    setOpenTabs((prev) => prev.filter((t) => t !== path));
 
-  try {
-    await fileApi.renameNode(
-      accessToken,
-      workspaceId,
-      oldPath,
-      newPath
-    );
-  } catch (err) {
-    console.error("Rename failed", err);
-  }
+    setFileContents((prev) => {
+      const copy = { ...prev };
+      delete copy[path];
+      return copy;
+    });
 
-  await loadWorkspace();
-};
+    if (activeFile === path) setActiveFile(null);
+  };
+
+  const renameNode = async (oldPath, newName) => {
+    const newPath = oldPath.split("/").slice(0, -1).concat(newName).join("/");
+
+    try {
+      await fileApi.renameNode(accessToken, workspaceId, oldPath, newPath);
+    } catch (err) {
+      console.error("Rename failed", err);
+    }
+
+    await loadWorkspace();
+  };
 
   const deleteNode = async (path) => {
-  await fileApi.deleteNode(accessToken, workspaceId, path);
+    await fileApi.deleteNode(accessToken, workspaceId, path);
 
-  // ✅ Remove from open tabs
-  setOpenTabs((prev) => prev.filter((t) => !t.startsWith(path)));
+    // ✅ Remove from open tabs
+    setOpenTabs((prev) => prev.filter((t) => !t.startsWith(path)));
 
-  // ✅ Remove file contents
-  setFileContents((prev) => {
-    const updated = { ...prev };
-    Object.keys(updated).forEach((key) => {
-      if (key.startsWith(path)) delete updated[key];
+    // ✅ Remove file contents
+    setFileContents((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((key) => {
+        if (key.startsWith(path)) delete updated[key];
+      });
+      return updated;
     });
-    return updated;
-  });
 
-  // ✅ Remove dirty flags
-  setDirtyFiles((prev) => {
-    const newSet = new Set(prev);
-    [...newSet].forEach((file) => {
-      if (file.startsWith(path)) newSet.delete(file);
+    // ✅ Remove dirty flags
+    setDirtyFiles((prev) => {
+      const newSet = new Set(prev);
+      [...newSet].forEach((file) => {
+        if (file.startsWith(path)) newSet.delete(file);
+      });
+      return newSet;
     });
-    return newSet;
-  });
 
-  // ✅ Reset active file if deleted
-  setActiveFile((prev) =>
-    prev && prev.startsWith(path) ? null : prev
-  );
+    // ✅ Reset active file if deleted
+    setActiveFile((prev) => (prev && prev.startsWith(path) ? null : prev));
 
-  await loadWorkspace();
-};
+    await loadWorkspace();
+  };
 
   /* ================= RUN FILE ================= */
 
- const runCode = async () => {
-     if (!activeFile) return;
- 
-     setPreviewUrl(null);
-     setShowTerminal(true);
- 
-     await fileApi.saveFile(
-       accessToken,
-       workspaceId,
-       activeFile,
-       fileContentsRef.current[activeFile] || ""
-     );
- 
-     const terminalId = safeTerminalId(activeFile);
-     const file = `/workspace/${activeFile}`;
- 
-     let command = "";
- 
-     if (activeFile.endsWith(".py"))
-       command = `python3 "${file}"`;
-     else if (activeFile.endsWith(".js"))
-       command = `node "${file}"`;
-     else if (activeFile.endsWith(".cpp"))
-       command = `g++ "${file}" -o /workspace/a.out && /workspace/a.out`;
-     else if (activeFile.endsWith(".c"))
-       command = `gcc "${file}" -o /workspace/a.out && /workspace/a.out`;
-     else if (activeFile.endsWith(".java")) {
-       const dir = activeFile.split("/").slice(0, -1).join("/");
-       const cls = activeFile.split("/").pop().replace(".java", "");
-       command = `cd /workspace/${dir} && javac ${cls}.java && java ${cls}`;
-     } else return;
- 
-     if (!terminals.find((t) => t.id === terminalId)) {
-       pendingRunRef.current = command + "\n";
-       sendWS({
-         type: "create",
-         terminalId,
-         workspaceId,
-       });
-       return;
-     }
- 
-     setActiveTerminal(terminalId);
-     sendWS({ type: "input", terminalId, data: command + "\n" });
-   };
+  const runCode = async () => {
+    try {
+      if (!activeFile) return;
+
+      const terminalId = safeTerminalId(activeFile);
+
+      /* ========================================= */
+      /* PREVENT DUPLICATE RUNNING                 */
+      /* ========================================= */
+
+      if (runningTerminalRef.current.has(terminalId)) {
+        return;
+      }
+
+      runningTerminalRef.current.add(terminalId);
+
+      setPreviewUrl(null);
+      setShowTerminal(true);
+
+      await fileApi.saveFile(
+        accessToken,
+        workspaceId,
+        activeFile,
+        fileContentsRef.current[activeFile] || "",
+      );
+
+      const file = `/workspace/${activeFile}`;
+
+      let command = "";
+
+      if (activeFile.endsWith(".py")) command = `python3 "${file}"`;
+      else if (activeFile.endsWith(".js")) command = `node "${file}"`;
+      else if (activeFile.endsWith(".cpp"))
+        command = `g++ "${file}" -o /workspace/a.out && /workspace/a.out`;
+      else if (activeFile.endsWith(".c"))
+        command = `gcc "${file}" -o /workspace/a.out && /workspace/a.out`;
+      else if (activeFile.endsWith(".java")) {
+        const dir = activeFile.split("/").slice(0, -1).join("/");
+
+        const cls = activeFile.split("/").pop().replace(".java", "");
+
+        command = `cd /workspace/${dir} && javac ${cls}.java && java ${cls}`;
+      } else {
+        runningTerminalRef.current.delete(terminalId);
+        return;
+      }
+
+      if (!terminals.find((t) => t.id === terminalId)) {
+        pendingRunRef.current = command + "\n";
+
+        sendWS({
+          type: "create",
+          terminalId,
+          workspaceId,
+        });
+      } else {
+        setActiveTerminal(terminalId);
+
+        sendWS({
+          type: "input",
+          terminalId,
+          data: command + "\n",
+        });
+      }
+
+      /* ========================================= */
+      /* AUTO UNLOCK                               */
+      /* ========================================= */
+
+      setTimeout(() => {
+        runningTerminalRef.current.delete(terminalId);
+      }, 3000);
+    } catch (err) {
+      console.error("RUN CODE ERROR:", err);
+    }
+  };
 
   /* ================= RUN PROJECT ================= */
 
-const runProject = async () => {
-  setShowTerminal(true);
+  const runProject = async () => {
+    setShowTerminal(true);
 
-  const res = await fetch(`${backendUrl}/api/run`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ workspaceId }),
-  });
-
-  const data = await res.json();
-
-  if (data.jobId) {
-    const terminalId = `project_${workspaceId}`;
-
-    sendWS({
-      type: "create",
-      terminalId,
-      workspaceId,
+    const res = await fetch(`${backendUrl}/api/run`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ workspaceId }),
     });
 
-    setActiveTerminal(terminalId);
-  }
-};
+    const data = await res.json();
 
+    if (data.jobId) {
+      const terminalId = `project_${workspaceId}`;
+
+      sendWS({
+        type: "create",
+        terminalId,
+        workspaceId,
+      });
+
+      setActiveTerminal(terminalId);
+    }
+  };
 
   /* ================= PREVIEW ================= */
 
   let previewWindow = null; // 👈 persists across calls
 
-const refreshPreview = async () => {
-  if (!activeFile?.endsWith(".html")) return;
+  const refreshPreview = async () => {
+  try {
+    if (!activeFile?.endsWith(".html")) return;
 
-  await fileApi.saveFile(
-    accessToken,
-    workspaceId,
-    activeFile,
-    fileContentsRef.current[activeFile] || ""
-  );
+    /* ========================================= */
+    /* SAVE FILE                                 */
+    /* ========================================= */
 
-  const url = `${backendUrl}/preview/${userId}/${workspaceId}/${activeFile}`;
+    await fileApi.saveFile(
+      accessToken,
+      workspaceId,
+      activeFile,
+      fileContentsRef.current[activeFile] || ""
+    );
 
-  if (!previewWindow || previewWindow.closed) {
-    previewWindow = window.open(url, "LIVE_PREVIEW");
-  } else {
-    previewWindow.focus();
+    /* ========================================= */
+    /* HYDRATE WORKSPACE                         */
+    /* ========================================= */
+
+    await fetch(
+      `${backendUrl}/api/workspaces/${workspaceId}/hydrate`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    /* ========================================= */
+    /* PREVIEW URL                               */
+    /* ========================================= */
+
+    const url =
+      `${backendUrl}/preview/` +
+      `${userId}/${workspaceId}/${activeFile}`;
+
+    if (!previewWindow || previewWindow.closed) {
+      previewWindow = window.open(
+        url,
+        "LIVE_PREVIEW"
+      );
+    } else {
+      previewWindow.location.href = url;
+      previewWindow.focus();
+    }
+
+  } catch (err) {
+    console.error(
+      "PREVIEW ERROR:",
+      err
+    );
   }
 };
 

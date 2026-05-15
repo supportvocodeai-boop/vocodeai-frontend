@@ -1,16 +1,22 @@
+import { useState } from "react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import "../../styles/editor.css";
 
 export default function RunBar() {
-  const { runCode, runProject, activeFile, refreshPreview } =
-    useWorkspace();
+  const {
+    runCode,
+    runProject,
+    activeFile,
+    refreshPreview,
+  } = useWorkspace();
+
+  const [isRunning, setIsRunning] = useState(false);
 
   const isProject = !activeFile;
   const isHTML = activeFile?.endsWith(".html");
 
   const ext = activeFile?.split(".").pop();
 
-  // Language labels
   const languageMap = {
     py: { label: "PYTHON", color: "#3776AB" },
     js: { label: "JAVASCRIPT", color: "#f7df1e" },
@@ -28,22 +34,47 @@ export default function RunBar() {
 
   const meta = ext ? languageMap[ext] || {} : {};
 
-  const handleRun = () => {
-    if (isProject) {
-      runProject();
-    } else if (isHTML) {
-      refreshPreview();
-    } else {
-      runCode();
+  const handleRun = async () => {
+    /* ========================================= */
+    /* BLOCK SPAM CLICKS                         */
+    /* ========================================= */
+
+    if (isRunning) return;
+
+    try {
+      setIsRunning(true);
+
+      if (isProject) {
+        await runProject();
+
+      } else if (isHTML) {
+        await refreshPreview();
+
+      } else {
+        await runCode();
+      }
+
+    } catch (err) {
+      console.error("RUN ERROR:", err);
+
+    } finally {
+      setTimeout(() => {
+        setIsRunning(false);
+      }, 1500);
     }
   };
 
   return (
     <div className="run-bar">
+
       <div className="run-bar-left">
         <span
           className="lang-badge"
-          style={!isProject && meta.color ? { background: meta.color } : {}}
+          style={
+            !isProject && meta.color
+              ? { background: meta.color }
+              : {}
+          }
         >
           {isProject
             ? "PROJECT"
@@ -52,13 +83,23 @@ export default function RunBar() {
       </div>
 
       <div className="run-bar-right">
-        <button className="run-btn" onClick={handleRun}>
-          {isProject
+
+        <button
+          className={`run-btn ${
+            isRunning ? "running" : ""
+          }`}
+          onClick={handleRun}
+          disabled={isRunning}
+        >
+          {isRunning
+            ? "⏳ Running..."
+            : isProject
             ? "▶ Run Project"
             : isHTML
             ? "👁 Preview"
             : "▶ Run File"}
         </button>
+
       </div>
     </div>
   );

@@ -7,13 +7,8 @@ const AIContext = createContext();
 
 export function AIProvider({ children }) {
   const { accessToken } = useAuth();
-  const {
-    openFile,
-    updateContent,
-    addFile,
-    runCode,
-    openNewTerminal,
-  } = useWorkspace();
+  const { openFile, updateContent, addFile, runCode, openNewTerminal } =
+    useWorkspace();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +25,6 @@ export function AIProvider({ children }) {
 
       if (ai.actions) {
         for (const action of ai.actions) {
-
           if (action.action === "create_file") {
             await addFile("", action.path);
             await openFile(action.path);
@@ -51,12 +45,41 @@ export function AIProvider({ children }) {
 
       /* ================= CHAT ================= */
 
+      const assistantMessages = [];
+
+      if (ai.actions) {
+        for (const action of ai.actions) {
+          if (action.action === "create_file") {
+            assistantMessages.push(`Created ${action.path} successfully ✅`);
+          }
+
+          if (action.action === "write_file") {
+            assistantMessages.push(`Updated ${action.path} ✨`);
+          }
+
+          if (action.action === "run_code" || action.action === "terminal") {
+            assistantMessages.push(`Running code in terminal ▶`);
+          }
+
+          if (action.action === "chat") {
+            assistantMessages.push(action.message);
+          }
+        }
+      }
+
       setMessages((prev) => [
         ...prev,
-        { role: "user", content: text },
-        { role: "assistant", content: "Done ✅" },
-      ]);
 
+        {
+          role: "user",
+          content: text,
+        },
+
+        {
+          role: "assistant",
+          content: assistantMessages.join("\n") || "Task completed ✅",
+        },
+      ]);
     } catch (err) {
       console.error(err);
     }

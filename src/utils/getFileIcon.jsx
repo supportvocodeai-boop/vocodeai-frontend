@@ -29,7 +29,7 @@ export const getFileIcon = (name, type, open = false) => {
     case "tsx":
       return <SiReact color="#61dafb" />;
     case "java":
-      return <FaJava color="#f89820" />; // ✅ FIXED
+      return <FaJava color="#f89820" />; 
     case "cpp":
     case "cc":
     case "cxx":

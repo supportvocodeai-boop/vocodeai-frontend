@@ -1,9 +1,6 @@
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import {
-  WorkspaceProvider,
-  useWorkspace,
-} from "../context/WorkspaceContext";
+import { WorkspaceProvider, useWorkspace } from "../context/WorkspaceContext";
 import { useEffect, useState, useRef } from "react";
 import { getWorkspace } from "../services/workspaceApi";
 
@@ -39,6 +36,7 @@ function WorkspaceLayout() {
 
   /* ---------- AI PANEL ---------- */
   const [showAI, setShowAI] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -55,9 +53,7 @@ function WorkspaceLayout() {
 
   const resizeSidebar = (e) => {
     if (!resizingSidebar.current) return;
-    setSidebarWidth((w) =>
-      Math.min(Math.max(w + e.movementX, 180), 420)
-    );
+    setSidebarWidth((w) => Math.min(Math.max(w + e.movementX, 180), 420));
   };
 
   const stopSidebarResize = () => {
@@ -74,9 +70,7 @@ function WorkspaceLayout() {
 
   const resizeTerminal = (e) => {
     if (!resizingTerminal.current) return;
-    setTerminalHeight((h) =>
-      Math.min(Math.max(h - e.movementY, 120), 500)
-    );
+    setTerminalHeight((h) => Math.min(Math.max(h - e.movementY, 120), 500));
   };
 
   const stopTerminalResize = () => {
@@ -87,7 +81,7 @@ function WorkspaceLayout() {
 
   return (
     <>
-      <Navbar />
+      <Navbar setMobileSidebarOpen={setMobileSidebarOpen} />
 
       <div
         className="workspace"
@@ -107,19 +101,22 @@ function WorkspaceLayout() {
         {/* ---------- SIDEBAR ---------- */}
         <div
           className="sidebar-wrapper"
-          style={{ width: sidebarWidth }}
+          style={{
+            "--sidebar-width": `${sidebarWidth}px`,
+          }}
         >
-          <Sidebar />
-          <div
-            className="sidebar-resizer"
-            onMouseDown={startSidebarResize}
+          <Sidebar
+            mobileOpen={mobileSidebarOpen}
+            setMobileOpen={setMobileSidebarOpen}
           />
+          {window.innerWidth > 768 && (
+            <div className="sidebar-resizer" onMouseDown={startSidebarResize} />
+          )}
         </div>
 
         {/* ---------- MAIN AREA ---------- */}
         <div className="workspace-main">
           <div className="workspace-content">
-
             {/* ===== EDITOR ===== */}
             <div className="editor-section">
               <RunBar />
@@ -139,17 +136,12 @@ function WorkspaceLayout() {
                   <span>VocodeAI</span>
 
                   {/* ✅ FIXED CLOSE BUTTON */}
-                  <button
-                    onClick={() => navigate(location.pathname)}
-                  >
-                    ✕
-                  </button>
+                  <button onClick={() => navigate(location.pathname)}>✕</button>
                 </div>
 
                 <AIChat workspaceId={currentProject} />
               </div>
             )}
-
           </div>
 
           {/* ===== TERMINAL ===== */}
@@ -170,11 +162,7 @@ function WorkspaceLayout() {
                 closeTerminal={killTerminal}
               />
 
-              {activeTerminal && (
-                <TerminalPanel terminalId={activeTerminal} />
-              )}
-
-              
+              {activeTerminal && <TerminalPanel terminalId={activeTerminal} />}
             </div>
           )}
         </div>
@@ -211,10 +199,7 @@ export default function Workspace() {
   return (
     <WorkspaceProvider userId={user.id} workspaceId={workspaceId}>
       <AIProvider>
-        <WorkspaceLoader
-          workspaceId={workspaceId}
-          accessToken={accessToken}
-        />
+        <WorkspaceLoader workspaceId={workspaceId} accessToken={accessToken} />
         <WorkspaceLayout />
       </AIProvider>
     </WorkspaceProvider>

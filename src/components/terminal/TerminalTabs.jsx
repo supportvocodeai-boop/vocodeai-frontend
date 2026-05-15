@@ -1,5 +1,7 @@
 import "../../styles/terminal.css";
+
 import { useWorkspace } from "../../context/WorkspaceContext";
+
 import {
   FiSquare,
   FiRefreshCw,
@@ -20,38 +22,77 @@ export default function TerminalTabs() {
 
   if (!terminals.length) return null;
 
+  /* ====================================== */
+  /* SEND */
+  /* ====================================== */
+
   const send = (payload) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(payload));
+    if (
+      socketRef.current?.readyState ===
+      WebSocket.OPEN
+    ) {
+      socketRef.current.send(
+        JSON.stringify(payload)
+      );
     }
   };
 
+  /* ====================================== */
+  /* ACTIONS */
+  /* ====================================== */
+
   const stopProcess = (id) => {
-    send({ type: "input", terminalId: id, data: "\x03" });
+    send({
+      type: "input",
+      terminalId: id,
+      data: "\x03",
+    });
   };
 
   const restartTerminal = (id) => {
-    send({ type: "restart", terminalId: id });
+    send({
+      type: "restart",
+      terminalId: id,
+    });
   };
 
   const clearTerminal = (id) => {
-    send({ type: "clear", terminalId: id });
+    send({
+      type: "clear",
+      terminalId: id,
+    });
+  };
+
+  const closeAll = () => {
+    terminals.forEach((t) =>
+      killTerminal(t.id)
+    );
   };
 
   return (
     <div className="terminal-header">
+      {/* ====================================== */}
       {/* TABS */}
+      {/* ====================================== */}
+
       <div className="terminal-tabs">
         {terminals.map((t, i) => (
           <div
             key={t.id}
             className={`terminal-tab ${
-              activeTerminal === t.id ? "active" : ""
+              activeTerminal === t.id
+                ? "active"
+                : ""
             }`}
-            onClick={() => setActiveTerminal(t.id)}
+            onClick={() =>
+              setActiveTerminal(t.id)
+            }
           >
             <span className="dot" />
-            <span className="title">Terminal {i + 1}</span>
+
+            <span className="title">
+              Terminal {i + 1}
+            </span>
 
             <div className="actions">
               <FiSquare
@@ -80,6 +121,7 @@ export default function TerminalTabs() {
 
               <FiX
                 className="close"
+                title="Close"
                 onClick={(e) => {
                   e.stopPropagation();
                   killTerminal(t.id);
@@ -90,18 +132,45 @@ export default function TerminalTabs() {
         ))}
       </div>
 
-      {/* RIGHT ACTIONS */}
+      {/* ====================================== */}
+      {/* RIGHT */}
+      {/* ====================================== */}
+
       <div className="terminal-right">
-        <button className="new-btn" onClick={openNewTerminal}>
-          <FiPlus /> New
+        <button
+          className="new-btn"
+          onClick={openNewTerminal}
+        >
+          <FiPlus />
+          <span>New</span>
         </button>
 
-        <button className="icon-btn">
+        {/* STOP ACTIVE */}
+        <button
+          className="icon-btn"
+          onClick={() =>
+            stopProcess(activeTerminal)
+          }
+        >
           <FiSquare />
         </button>
 
-        <button className="icon-btn danger">
+        {/* CLEAR ACTIVE */}
+        <button
+          className="icon-btn"
+          onClick={() =>
+            clearTerminal(activeTerminal)
+          }
+        >
           <FiTrash2 />
+        </button>
+
+        {/* CLOSE ALL */}
+        <button
+          className="icon-btn danger"
+          onClick={closeAll}
+        >
+          <FiX />
         </button>
       </div>
     </div>

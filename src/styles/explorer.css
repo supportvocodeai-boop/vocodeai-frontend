@@ -120,3 +120,28 @@
 .creating {
   background: rgba(0, 255, 170, 0.05);
 }
+
+@media (max-width: 768px) {
+  .tree-row {
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .name {
+    font-size: 13px;
+  }
+
+  .tree-actions {
+    opacity: 1;
+  }
+
+  .tree-actions button {
+    font-size: 14px;
+    padding: 4px;
+  }
+
+  .rename-input {
+    font-size: 13px;
+    width: 100%;
+  }
+}
