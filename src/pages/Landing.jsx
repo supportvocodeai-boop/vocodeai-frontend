@@ -197,7 +197,9 @@ const Landing = () => {
             <button className="primary" onClick={login}>
               Get Started
             </button>
-            <button className="secondary">View Demo</button>
+            <button className="secondary" onClick={() => navigate("/docs")}>
+              Docs
+            </button>
           </div>
         </div>
 
